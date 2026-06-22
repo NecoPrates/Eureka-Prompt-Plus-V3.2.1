@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka Engenharia Avançada de Prompt V3.2 - Master Edition</title>
+    <style>
+        :root { --primary: #2980b9; --accent: #e67e22; --dark: #2c3e50; --light: #f4f7f6; --success: #27ae60; --danger: #c0392b; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light); padding: 20px; color: #333; margin: 0; }
+        
+        /* Layout de Grid com Sidebar */
+        .container { max-width: 1300px; margin: auto; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+        @media(max-width: 900px) { .container { grid-template-columns: 1fr; } }
+        
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        h1 { color: var(--dark); text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 0.9em; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: span 2; }
+        @media(max-width: 600px) { .grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+        
+        .field-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        label { font-weight: bold; color: var(--primary); display: flex; align-items: center; }
+        .help-btn { cursor: pointer; color: #7f8c8d; margin-left: 8px; font-size: 0.9em; border: 1px solid #ccc; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; justify-content: center; align-items: center; }
+        
+        select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd; background: #f9f9f9; margin-bottom: 8px; cursor: pointer; }
+        textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; resize: vertical; font-size: 14px; }
+        
+        #roteiro, #objetivo, #panorama { height: 150px; }
+        #persona, #modelo, #transformar { height: 100px; }
+
+        .footer-disclaimer { font-size: 11px; color: #7f8c8d; text-align: center; margin-top: 25px; font-style: italic; }
+        
+        .button-group { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-generate { background-color: var(--primary); color: white; flex: 1; }
+        .btn-copy { background-color: var(--success); color: white; display: none; }
+        .btn-save-lib { background-color: var(--accent); color: white; display: none; }
+        .btn-download { background-color: #7f8c8d; color: white; display: none; font-size: 12px; padding: 12px 15px;}
+
+        #output-area { margin-top: 30px; }
+        #finalPrompt { background-color: #1c2833; color: #ecf0f1; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; border-left: 5px solid var(--primary); }
+
+        /* Estilos da Biblioteca (Inspired by Maestro) */
+        .sidebar-title { font-size: 16px; font-weight: bold; color: var(--dark); margin-bottom: 15px; border-bottom: 2px solid var(--light); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .lib-count { font-size: 12px; color: #7f8c8d; font-weight: normal; }
+        #lib-search { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
+        
+        .pcard { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 10px; transition: all 0.2s; }
+        .pcard:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .pcard-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .pcard-name { font-size: 14px; font-weight: 600; color: var(--dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        .pcard-date { font-size: 10px; color: #aaa; margin-left: 8px; }
+        .pcard-preview { font-size: 12px; color: #666; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; margin-bottom: 8px; }
+        .pcard-actions { display: flex; gap: 6px; }
+        .mini-btn { padding: 4px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; border: 1px solid #ddd; background: white; color: #666; font-family: inherit; transition: all 0.2s; }
+        .mini-btn:hover { background: var(--light); }
+        .mini-btn.danger:hover { background: #ffeaea; color: var(--danger); border-color: var(--danger); }
+        
+        .empty-lib { text-align: center; padding: 30px 10px; color: #aaa; font-size: 13px; }
+        
+        /* Modal */
+        .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-bg.open { display: flex; }
+        .modal { background: white; border-radius: 12px; width: 100%; max-width: 700px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { margin: 0; color: var(--dark); }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        .modal-body { padding: 20px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; white-space: pre-wrap; background: #f9f9f9; margin: 15px; border-radius: 8px; flex: 1; color: #333; }
+        .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- AREA PRINCIPAL -->
+    <div class="card">
+        <h1>Eureka Prompt Plus V3.2</h1>
+        <p class="subtitle">Engenharia de Contexto & Protocolos de Raciocínio Ativados</p>
+
+        <div class="grid">
+            <!-- PERSONA -->
+            <div>
+                <div class="field-header">
+                    <label>Persona (P) <span class="help-btn" onclick="ajuda('persona')">?</span></label>
+                </div>
+                <select onchange="preencher('persona', this.value)">
+                    <option value="">-- Exemplos de Persona --</option>
+                    <option value="Você é um Mestre em Marketing e Psicologia do Consumidor com 20 anos de experiência em copy de alta conversão.">Mestre em Marketing</option>
+                    <option value="Você é um Engenheiro de Software Sênior especialista em arquitetura de sistemas e Clean Code.">Engenheiro Sênior</option>
+                    <option value="Você é um Professor Socrático que guia o aluno através de perguntas em vez de dar respostas diretas.">Professor Socrático</option>
+                    <option value="Você é um Editor de Livros rigoroso, focado em clareza e ritmo narrativo.">Editor de Livros</option>
+                    <option value="Você é um Analista de Dados especializado em extrair insights estratégicos de textos longos.">Analista de Dados</option>
+                </select>
+                <textarea id="persona" placeholder="Quem a IA deve ser?"></textarea>
+            </div>
+
+            <!-- MODELO -->
+            <div>
+                <div class="field-header">
+                    <label>Modelo (M) <span class="help-btn" onclick="ajuda('modelo')">?</span></label>
+                </div>
+                <select onchange="preencher('modelo', this.value)">
+                    <option value="">-- Exemplos de Formato --</option>
+                    <option value="Tabela Markdown com colunas para: Item, Vantagem e Preço.">Tabela Markdown</option>
+                    <option value="Estrutura de 10 slides, cada um com título e 3 tópicos curtos.">Slides</option>
+                    <option value="Formato JSON estrito para integração de sistemas.">JSON</option>
+                    <option value="Lista numerada de passos com termos principais em negrito.">Lista de Passos</option>
+                    <option value="Resumo executivo focado nos pontos mais críticos.">Sumário Executivo</option>
+                    <option value="Diálogo entre duas personas que debatem o tema.">Diálogo</option>
+                </select>
+                <textarea id="modelo" placeholder="Como a resposta deve ser entregue?"></textarea>
+            </div>
+
+            <!-- ROTEIRO -->
+            <div>
+                <div class="field-header">
+                    <label>Roteiro (R) <span class="help-btn" onclick="ajuda('roteiro')">?</span></label>
+                </div>
+                <select onchange="preencher('roteiro', this.value)">
+                    <option value="">-- Exemplos de Tarefa --</option>
+                    <option value="Escreva um roteiro de vídeo para Instagram Reels de 60 segundos sobre {{tema}}.">Reels</option>
+                    <option value="Crie uma sequência de 5 e-mails de vendas para lançamento.">E-mails de Vendas</option>
+                    <option value="Resuma a transcrição em tópicos acionáveis.">Resumo</option>
+                    <option value="Desenvolva um artigo de blog focado em {{palavra_chave}}.">Artigo SEO</option>
+                    <option value="Documente o código fornecido explicando cada função.">Documentação</option>
+                </select>
+                <textarea id="roteiro" placeholder="O que deve ser feito?"></textarea>
+            </div>
+
+            <!-- OBJETIVO -->
+            <div>
+                <div class="field-header">
+                    <label>Objetivo (O) <span class="help-btn" onclick="ajuda('objetivo')">?</span></label>
+                </div>
+                <select onchange="preencher('objetivo', this.value)">
+                    <option value="">-- Exemplos de Objetivo --</option>
+                    <option value="Converter leads frios através de urgência e prova social.">Conversão</option>
+                    <option value="Simplificar um conceito para uma criança de 10 anos.">Simplificação</option>
+                    <option value="Fornecer apenas informação direta e factual (latência baixa).">Eficiência</option>
+                    <option value="Gerar retenção imediata nos primeiros 3 segundos.">Retenção</option>
+                    <option value="Criar autoridade instantânea no nicho de {{nicho}}.">Autoridade</option>
+                </select>
+                <textarea id="objetivo" placeholder="Por que fazer isso?"></textarea>
+            </div>
+
+            <!-- PANORAMA -->
+            <div class="full-width">
+                <div class="field-header">
+                    <label>Panorama / Contexto (P) <span class="help-btn" onclick="ajuda('panorama')">?</span></label>
+                </div>
+                <select onchange="preencher('panorama', this.value)">
+                    <option value="">-- Exemplos de Contexto --</option>
+                    <option value="O público são empreendedores B2B que faturam mais de R$ 10k/mês.">Público B2B</option>
+                    <option value="Curso de R$ 997,00 com 30 dias de garantia e 3 bônus.">Dados de Oferta</option>
+                    <option value="Transcrição de mentoria para análise: {{transcricao}}">Transcrição Longa</option>
+                    <option value="Tom de marca rebelde, mas profissional, focado em resultados.">Tom de Marca</option>
+                </select>
+                <textarea id="panorama" placeholder="Contexto, dados ou use {{variáveis}}..."></textarea>
+            </div>
+
+            <!-- TRANSFORMAR -->
+            <div class="full-width">
+                <div class="field-header">
+                    <label>Transformar (T) <span class="help-btn" onclick="ajuda('transformar')">?</span></label>
+                </div>
+                <select onchange="preencher('transformar', this.value)">
+                    <option value="">-- Exemplos de Refinamento --</option>
+                    <option value="Use tom amigável; evite jargões técnicos.">Tom Amigável</option>
+                    <option value="Se não souber, diga 'Não possuo essa informação'.">Anti-Alucinação</option>
+                    <option value="Revise 3 vezes para eliminar ambiguidades.">Revisão Rigorosa</option>
+                    <option value="Parágrafos de no máximo 4 linhas.">Legibilidade</option>
+                    <option value="Gere 3 variações de títulos com níveis de curiosidade diferentes.">Variações</option>
+                </select>
+                <textarea id="transformar" placeholder="Regras de estilo ou feedbacks..."></textarea>
+            </div>
+        </div>
+
+        <p class="footer-disclaimer">
+            Garantia EUREKA: Este prompt implementa protocolos automáticos de Cadeia de Pensamento (CoT), Árvore de Pensamentos (ToT), Verificação de Fatos (CoVe) e Governança NIST AI RMF.
+        </p>
+
+        <div class="button-group">
+            <button class="btn-generate" onclick="gerarPrompt()">Gerar Prompt Estruturado 🚀</button>
+            <button id="btnCopy" class="btn-copy" onclick="copiarPrompt()">📋 Copiar</button>
+            <button id="btnSaveLib" class="btn-save-lib" onclick="salvarNaBiblioteca()">📚 Salvar na Biblioteca</button>
+            <button id="btnDownload" class="btn-download" onclick="salvarPrompt()">💾 Download .txt</button>
+        </div>
+
+        <div id="output-area">
+            <div id="finalPrompt">O prompt aparecerá aqui...</div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR BIBLIOTECA (Solução Maestro) -->
+    <div class="card">
+        <div class="sidebar-title">
+            <span>📚 Biblioteca de Prompts</span>
+            <span class="lib-count" id="lib-count">0 itens</span>
+        </div>
+        <input type="text" id="lib-search" placeholder="Buscar nos prompts salvos..." oninput="renderLib()">
+        <div id="lib-list">
+            <div class="empty-lib">
+                Nenhum prompt salvo ainda.<br>
+                <small>Gere um prompt e clique em "Salvar na Biblioteca".</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE VISUALIZAÇÃO -->
+<div class="modal-bg" id="modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modal-title">Visualizar Prompt</h3>
+            <button class="modal-close" onclick="fecharModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+        <div class="modal-footer">
+            <button class="mini-btn" onclick="copiarModal()" style="padding: 8px 15px; font-size: 13px;">📋 Copiar Texto</button>
+            <button class="mini-btn" onclick="fecharModal()" style="padding: 8px 15px; font-size: 13px;">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- SISTEMA DE BIBLIOTECA (Inspiração Maestro) ---
+    let promptsSalvos = [];
+    let indiceModal = -1;
+
+    function carregarBiblioteca() {
+        try {
+            const dados = localStorage.getItem('eureka-v32-biblioteca');
+            if (dados) promptsSalvos = JSON.parse(dados);
+        } catch (e) { console.error("Erro ao carregar biblioteca", e); }
+        renderLib();
+    }
+
+    function atualizarStorage() {
+        try {
+            localStorage.setItem('eureka-v32-biblioteca', JSON.stringify(promptsSalvos));
+        } catch (e) { alert("Erro ao salvar no navegador. Limite de espaço atingido?"); }
+    }
+
+    function salvarNaBiblioteca() {
+        const texto = document.getElementById('finalPrompt').innerText;
+        if (!texto || texto === "O prompt aparecerá aqui...") {
+            alert("Gere um prompt primeiro!");
+            return;
+        }
+        const nome = prompt("Dê um nome para identificar este prompt:", "Prompt Eureka " + new Date().toLocaleDateString('pt-BR'));
+        if (!nome) return; // Cancelou
+
+        promptsSalvos.unshift({
+            nome: nome,
+            data: new Date().toLocaleDateString('pt-BR') + " " + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+            texto: texto
+        });
+        
+        atualizarStorage();
+        renderLib();
+        document.getElementById('btnSaveLib').innerText = "✅ Salvo!";
+        setTimeout(() => { document.getElementById('btnSaveLib').innerText = "📚 Salvar na Biblioteca"; }, 2000);
+    }
+
+    function renderLib() {
+        const busca = document.getElementById('lib-search').value.toLowerCase();
+        const filtrados = promptsSalvos.filter(p => 
+            p.nome.toLowerCase().includes(busca) || p.texto.toLowerCase().includes(busca)
+        );
+
+        document.getElementById('lib-count').textContent = promptsSalvos.length + ' item(ns)';
+        const lista = document.getElementById('lib-list');
+
+        if (filtrados.length === 0) {
+            lista.innerHTML = `<div class="empty-lib">${promptsSalvos.length === 0 ? 'Nenhum prompt salvo ainda.<br><small>Gere um prompt e clique em "Salvar na Biblioteca".</small>' : 'Nenhum resultado encontrado.'}</div>`;
+            return;
+        }
+
+        lista.innerHTML = filtrados.map((p, indexReal) => {
+            // Encontra o índice real no array principal para excluir corretamente
+            const idOriginal = promptsSalvos.indexOf(p);
+            return `
+                <div class="pcard">
+                    <div class="pcard-top">
+                        <span class="pcard-name" title="${p.nome}">${p.nome}</span>
+                        <span class="pcard-date">${p.data}</span>
+                    </div>
+                    <div class="pcard-preview">${p.texto}</div>
+                    <div class="pcard-actions">
+                        <button class="mini-btn" onclick="verPrompt(${idOriginal})">👁 Ver</button>
+                        <button class="mini-btn" onclick="copiarDireto(${idOriginal})">📋 Copiar</button>
+                        <button class="mini-btn danger" onclick="excluirPrompt(${idOriginal})">🗑</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function verPrompt(id) {
+        indiceModal = id;
+        document.getElementById('modal-title').innerText = promptsSalvos[id].nome;
+        document.getElementById('modal-body').innerText = promptsSalvos[id].texto;
+        document.getElementById('modal').classList.add('open');
+    }
+
+    function fecharModal() {
+        document.getElementById('modal').classList.remove('open');
+    }
+
+    function copiarModal() {
+        if (indiceModal >= 0) {
+            navigator.clipboard.writeText(promptsSalvos[indiceModal].texto);
+            alert("Prompt copiado da janela!");
+        }
+    }
+
+    function copiarDireto(id) {
+        navigator.clipboard.writeText(promptsSalvos[id].texto);
+        alert("Prompt copiado para a área de transferência!");
+    }
+
+    function excluirPrompt(id) {
+        if (confirm(`Excluir o prompt "${promptsSalvos[id].nome}"?`)) {
+            promptsSalvos.splice(id, 1);
+            atualizarStorage();
+            renderLib();
+        }
+    }
+
+
+    // --- SISTEMA ORIGINAL EUREKA 3.2 ---
+
+    const explicacoes = {
+        persona: "PERSONA (P): Define quem a IA é. 'Dê um cargo' e experiência para ela. Ex: 'Você é um copywriter sênior'. Isso direciona o tom e o vocabulário.",
+        modelo: "MODELO (M): O formato da entrega. Especifique se quer em tabelas, lista, código ou slides. Define a estrutura visual da resposta.",
+        roteiro: "ROTEIRO (R): A tarefa principal. O que a IA deve fazer exatamente? Ex: 'Escreva um e-mail'. Seja direto no comando.",
+        objetivo: "OBJETIVO (O): O 'porquê'. O que você quer alcançar? Ex: 'Vender um produto' ou 'Simplificar um tema'. Ajuda a IA a focar no resultado.",
+        panorama: "PANORAMA (P): O contexto e os dados. Use {{variáveis}} para marcar onde dados (como transcrições) serão colados. É o 'combustível' do prompt.",
+        transformar: "TRANSFORMAR (T): Refinamentos e regras. Como você quer o estilo (amigável, formal)? O que ela NÃO deve fazer? Inclui segurança anti-alucinação."
+    };
+
+    function ajuda(campo) { alert(explicacoes[campo]); }
+    function preencher(id, valor) { if(valor) document.getElementById(id).value = valor; }
+
+    function gerarPrompt() {
+        const p = document.getElementById('persona').value;
+        const r = document.getElementById('roteiro').value;
+        const o = document.getElementById('objetivo').value;
+        const m = document.getElementById('modelo').value;
+        const pan = document.getElementById('panorama').value;
+        const t = document.getElementById('transformar').value;
+
+        let res = `### ESTRUTURA P.R.O.M.P.T. ATIVADA\n\n`;
+        if(p) res += `<persona>\n${p}\n</persona>\n\n`;
+        if(pan) res += `<contexto_dados>\n${pan}\n</contexto_dados>\n\n`;
+        if(r) res += `<tarefa>\n${r}\n</tarefa>\n\n`;
+        if(o) res += `<objetivo>\n${o}\n</objetivo>\n\n`;
+        if(m) res += `<formato_saida>\n${m}\n</formato_saida>\n\n`;
+        if(t) res += `<refinamentos>\n${t}\n</refinamentos>\n\n`;
+
+        res += `### GARANTIA EUREKA: PROTOCOLOS AVANÇADOS\n`;
+        res += `1. [CoT] Pense passo a passo antes de responder.\n`;
+        res += `2. [ToT] Explore múltiplas linhas de raciocínio.\n`;
+        res += `3. [CoVe] Verifique fatos contra o contexto fornecido.\n`;
+        res += `4. [NIST] Siga a governança de segurança e evite alucinações.`;
+
+        document.getElementById('finalPrompt').innerText = res;
+        
+        // Mostra todos os botões de ação
+        document.getElementById('btnCopy').style.display = 'inline-flex';
+        document.getElementById('btnSaveLib').style.display = 'inline-flex';
+        document.getElementById('btnDownload').style.display = 'inline-flex';
+    }
+
+    function copiarPrompt() {
+        const texto = document.getElementById('finalPrompt').innerText;
+        navigator.clipboard.writeText(texto).then(() => alert("Copiado para a área de transferência!"));
+    }
+
+    // Mantido como opção extra de download em .txt
+    function salvarPrompt() {
+        const texto = document.getElementById('finalPrompt').innerText;
+        const agora = new Date();
+        const dataStr = agora.toLocaleDateString().replace(/\//g, '-') + "_" + agora.getHours() + "h" + agora.getMinutes();
+        const nome = prompt("Dê um nome para o arquivo:", "MeuPrompt");
+        if(!nome) return;
+        const filename = `EurekaV3.2_${nome}_${dataStr}.txt`;
+        
+        const blob = new Blob([texto], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+    }
+
+    // Inicializa a biblioteca ao carregar a página
+    window.onload = carregarBiblioteca;
+</script>
+
+</body>
+</html>
