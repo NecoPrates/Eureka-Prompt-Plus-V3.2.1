@@ -78,7 +78,7 @@
 <div class="container">
     <!-- AREA PRINCIPAL -->
     <div class="card">
-        <h1>Eureka Prompt Plus V3.2</h1>
+        <h1>Eureka Prompt Plus Versão 3.2.1</h1>
         <p class="subtitle">Engenharia de Contexto & Protocolos de Raciocínio Ativados</p>
 
         <div class="grid">
@@ -233,7 +233,7 @@
 
     function carregarBiblioteca() {
         try {
-            const dados = localStorage.getItem('eureka-v32-biblioteca');
+            const dados = localStorage.getItem('eureka-v321-biblioteca');
             if (dados) promptsSalvos = JSON.parse(dados);
         } catch (e) { console.error("Erro ao carregar biblioteca", e); }
         renderLib();
@@ -241,7 +241,7 @@
 
     function atualizarStorage() {
         try {
-            localStorage.setItem('eureka-v32-biblioteca', JSON.stringify(promptsSalvos));
+            localStorage.setItem('eureka-v321-biblioteca', JSON.stringify(promptsSalvos));
         } catch (e) { alert("Erro ao salvar no navegador. Limite de espaço atingido?"); }
     }
 
@@ -388,7 +388,7 @@
         const dataStr = agora.toLocaleDateString().replace(/\//g, '-') + "_" + agora.getHours() + "h" + agora.getMinutes();
         const nome = prompt("Dê um nome para o arquivo:", "MeuPrompt");
         if(!nome) return;
-        const filename = `EurekaV3.2_${nome}_${dataStr}.txt`;
+        const filename = `EurekaV3.2.1_${nome}_${dataStr}.txt`;
         
         const blob = new Blob([texto], { type: "text/plain" });
         const link = document.createElement("a");
